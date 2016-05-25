@@ -55,7 +55,7 @@
   :group 'languages)
 
 (defconst crystal-block-beg-keywords
-  '("class" "module" "def" "if" "unless" "case" "while" "until" "for" "begin" "do" "macro")
+  '("class" "module" "def" "if" "unless" "case" "while" "until" "for" "begin" "do" "macro" "struct")
   "Keywords at the beginning of blocks.")
 
 (defconst crystal-block-beg-re
@@ -67,7 +67,7 @@
   "Regexp to match keywords that nest without blocks.")
 
 (defconst crystal-indent-beg-re
-  (concat "^\\(\\s *" (regexp-opt '("class" "module" "def" "macro")) "\\|"
+  (concat "^\\(\\s *" (regexp-opt '("class" "module" "def" "macro" "struct")) "\\|"
           (regexp-opt '("if" "unless" "case" "while" "until" "for" "begin"))
           "\\)\\_>")
   "Regexp to match where the indentation gets deeper.")
@@ -103,7 +103,7 @@
 (defconst crystal-block-end-re "\\_<end\\_>")
 
 (defconst crystal-defun-beg-re
-  '"\\(def\\|class\\|module\\|macro\\)"
+  '"\\(def\\|class\\|module\\|macro\\|struct\\)"
   "Regexp to match the beginning of a defun, in the general sense.")
 
 (defconst crystal-singleton-class-re
@@ -381,7 +381,7 @@ It is used when `crystal-encoding-magic-comment-style' is set to `custom'."
        (exp3 ("def" insts "end")
              ("begin" insts-rescue-insts "end")
              ("do" insts "end")
-             ("class" insts "end") ("module" insts "end")
+             ("class" insts "end") ("module" insts "end") ("struct" insts "end")
              ("[" expseq "]")
              ("{" hashvals "}")
              ("{" insts "}")
@@ -723,7 +723,7 @@ It is used when `crystal-encoding-magic-comment-style' is set to `custom'."
                            "while" "until" "unless" "macro"
                            "if" "then" "elsif" "else" "when" "{%if%}"
                            "{%elsif%}" "{%else%}" "{%unless%}"
-                           "rescue" "ensure" "{")
+                           "rescue" "ensure" "{" "struct")
        ;; (message "Still got this one %s" (smie-indent--parent))
        (smie-rule-parent crystal-indent-level))
       ;; For (invalid) code between switch and case.
@@ -1750,7 +1750,7 @@ See `add-log-current-defun-function'."
                           "\\([A-Za-z_]" crystal-symbol-re "*\\|\\.\\|::" "\\)"
                           "+\\)")))
                (definition-re (funcall make-definition-re crystal-defun-beg-re))
-               (module-re (funcall make-definition-re "\\(class\\|module\\)")))
+               (module-re (funcall make-definition-re "\\(class\\|module\\|struct\\)")))
           ;; Get the current method definition (or class/module).
           (when (re-search-backward definition-re nil t)
             (goto-char (match-beginning 1))
@@ -2189,6 +2189,7 @@ See `font-lock-syntax-table'.")
           "retry"
           "return"
           "then"
+	  "struct"
           "super"
           "unless"
           "undef"
